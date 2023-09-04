@@ -1,49 +1,34 @@
-// Replace 'YOUR_API_KEY' with your actual OpenWeatherMap API key
-const apiKey = 'YOUR_API_KEY';
-const apiUrl = 'https://api.openweathermap.org/data/2.5/weather';
-
 // Get references to HTML elements
-const weatherData = document.querySelector('.weather-data');
+const countryInfo = document.querySelector('.country-info');
 
-// Function to fetch weather data
-const fetchWeatherData = async () => {
+// Function to fetch country data
+const fetchCountryData = async () => {
   try {
-    // Use the Geolocation API to get the user's current location
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
+    // Make an API request to get country data
+    const response = await fetch('https://restcountries.com/v3.1/all');
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Randomly select a country from the data
+      const randomIndex = Math.floor(Math.random() * data.length);
+      const randomCountry = data[randomIndex];
 
-        // Make an API request to get weather data using the user's location
-        const response = await fetch(
-          `${apiUrl}?lat=${latitude}&lon=${longitude}&appid=${apiKey}`
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-
-          // Extract relevant weather information
-          const city = data.name;
-          const temperature = data.main.temp;
-          const description = data.weather[0].description;
-
-          // Update the HTML with weather information
-          weatherData.innerHTML = `
-            <h2>Weather in ${city}</h2>
-            <p>Temperature: ${temperature}°C</p>
-            <p>Description: ${description}</p>
-          `;
-        } else {
-          weatherData.innerHTML = '<p>Failed to fetch weather data.</p>';
-        }
-      });
+      // Update the HTML with country information
+      countryInfo.innerHTML = `
+        <h2>${randomCountry.name.common}</h2>
+        <p>Capital: ${randomCountry.capital[0]}</p>
+        <p>Region: ${randomCountry.region}</p>
+        <p>Population: ${randomCountry.population}</p>
+        <img src="${randomCountry.flags.svg}" alt="${randomCountry.name.common} Flag">
+      `;
     } else {
-      weatherData.innerHTML = '<p>Geolocation is not supported by your browser.</p>';
+      countryInfo.innerHTML = '<p>Failed to fetch country data.</p>';
     }
   } catch (error) {
-    console.error('Error fetching weather data:', error);
-    weatherData.innerHTML = '<p>An error occurred while fetching weather data.</p>';
+    console.error('Error fetching country data:', error);
+    countryInfo.innerHTML = '<p>An error occurred while fetching country data.</p>';
   }
 };
 
-// Call the fetchWeatherData function when the page loads
-window.addEventListener('load', fetchWeatherData);
+// Add an event listener to fetch country data when the page loads
+window.addEventListener('load', fetchCountryData);
